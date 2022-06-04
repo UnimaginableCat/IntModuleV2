@@ -1,0 +1,329 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: #edeef0;
+  font-family: 'Rubik', sans-serif;
+}
+
+.mainBlock{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+header {
+  margin-left: 1vw;
+  margin-right: 1vw;
+  padding-bottom: 2vh;
+  padding-top: 2vh;
+  padding-left: 2vw;
+  background: #fff;
+  display: flex;
+  flex-direction: row;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-bottom: 2px solid #1C6EA4;
+  border-left: 2px solid #1C6EA4;
+  border-right: 2px solid #1C6EA4;
+}
+.mainBlock{
+  display: flex;
+}
+
+
+.active_filter{
+  display: flex;
+  flex-direction: row;
+
+}
+.active_filter label{
+  display: flex;
+  flex-direction: row;
+  margin: 10px 10px 10px 0;
+  line-height: 1.8;
+}
+.active_filter input[type=radio]{
+  height: 2em;
+  border: 0;
+  margin-right: 5px;
+}
+.min_quantity_filter{
+  display: flex;
+  flex-direction: column;
+}
+.min_quantity_filter input[type=number]{
+  margin-top: 10px;
+  margin-bottom: 10px;
+  width: 25vw;
+}
+.product_groups_filter{
+  display: flex;
+  flex-direction: column;
+  height: 15vh;
+}
+.product_groups_filter #id_groups{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  padding-bottom: 20px;
+  margin-top: 5px;
+}
+.product_groups_filter #id_groups div{
+  width: 10%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+}
+
+
+.mainBlock article{
+  padding-left: 2vw;
+  padding-right: 2vw;
+  padding-top: 2vh;
+  margin-left: 10%;
+  margin-right: 10%;
+  width: 80%;
+  height: 80vh;
+  background: #fff;
+  border-radius: 0px 0px 24px 24px;
+  box-shadow: 0 9px 10px 8px rgba(34, 60, 80, 0.06);
+  border-bottom: 2px solid #1C6EA4;
+  border-left: 2px solid #1C6EA4;
+  border-right: 2px solid #1C6EA4;
+}
+.mainBlock article h2 {
+  font-size: 1.75em;
+  margin-bottom: 25px;
+  border-bottom: 3px solid #1C6EA4;
+}
+.log_status{
+  display: flex;
+  flex-direction: row;
+  font-size: 1.25em;
+  margin-bottom: 10px;
+}
+.logged_in{
+  color: greenyellow;
+  margin-left: 10px;
+}
+.not_logged{
+  color: red;
+  margin-left: 10px;
+}
+.mainBlock article button{
+  width: 100%;
+  height: 3vh;
+}
+.mainBlock article input[type=text]{
+  height: 4vh;
+  width: 100%;
+  margin-top: 5px;
+}
+.cred_input{
+  padding-bottom: 25px;
+}
+.mainBlock article .content{
+  width: 40%;
+}
+
+.topNavLeft{
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.topNavRight{
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+  justify-content: flex-end;
+}
+.topNavLink{
+  padding-right: 10px;
+  justify-content: center;
+  justify-items: center;
+  font-size: 2em;
+}
+.topNavLink a {
+  background-image: linear-gradient(
+    to right,
+    #54b3d6,
+    #54b3d6 50%,
+    #000 50%
+  );
+  background-size: 200% 100%;
+  background-position: -100%;
+  display: inline-block;
+  padding: 5px 0;
+  position: relative;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: all 0.3s ease-in-out;
+}
+
+.topNavLink a:before {
+  content: '';
+  background: #54b3d6;
+  display: block;
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 0;
+  height: 3px;
+  transition: all 0.3s ease-in-out;
+}
+
+.topNavLink a:hover {
+ background-position: 0;
+}
+
+.topNavLink a:hover::before {
+  width:100%;
+}
+
+.login-form {
+  background: #fff;
+  width: 500px;
+  margin: 65px auto;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+          flex-direction: column;
+  border-radius: 4px;
+  box-shadow: 0 2px 25px rgba(0, 0, 0, 0.2);
+}
+.login-form h1 {
+  padding: 35px 35px 0 35px;
+  font-weight: 300;
+}
+.login-form .content {
+  padding: 35px;
+  text-align: center;
+}
+.login-form .input-field {
+  padding: 12px 5px;
+}
+.login-form .input-field input {
+  font-size: 16px;
+  display: block;
+  font-family: 'Rubik', sans-serif;
+  width: 100%;
+  padding: 10px 1px;
+  border: 0;
+  border-bottom: 1px solid #747474;
+  outline: none;
+  -webkit-transition: all .2s;
+  transition: all .2s;
+}
+.login-form .input-field input::-webkit-input-placeholder {
+  text-transform: uppercase;
+}
+.login-form .input-field input::-moz-placeholder {
+  text-transform: uppercase;
+}
+.login-form .input-field input:-ms-input-placeholder {
+  text-transform: uppercase;
+}
+.login-form .input-field input::-ms-input-placeholder {
+  text-transform: uppercase;
+}
+.login-form .input-field input::placeholder {
+  text-transform: uppercase;
+}
+.login-form .input-field input:focus {
+  border-color: #222;
+}
+.login-form a.link {
+  text-decoration: none;
+  color: #747474;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  display: inline-block;
+  margin-top: 20px;
+}
+.login-form .action {
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+          flex-direction: row;
+}
+.login-form .action button {
+  width: 100%;
+  border: none;
+  padding: 18px;
+  font-family: 'Rubik', sans-serif;
+  cursor: pointer;
+  text-transform: uppercase;
+  background: #e8e9ec;
+  color: #777;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 0;
+  letter-spacing: 0.2px;
+  outline: 0;
+  -webkit-transition: all .3s;
+  transition: all .3s;
+}
+.login-form .action button:hover {
+  background: #d8d8d8;
+}
+.login-form .action button:nth-child(2) {
+  background: #2d3b55;
+  color: #fff;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 4px;
+}
+.login-form .action button:nth-child(2):hover {
+  background: #3c4d6d;
+}
+.action input {
+  visibility: hidden;
+}
+
+
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+/* The Close Button */
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}

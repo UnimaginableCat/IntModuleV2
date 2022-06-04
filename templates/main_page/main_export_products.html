@@ -1,0 +1,25 @@
+{% extends "base_main.html" %}
+{% block title %}Export products{% endblock %}
+{% block content %}
+    <h2>Export products</h2>
+    {% if zone_status %}
+        <h3>Filters:</h3>
+        <form method="post">
+        {% csrf_token %}
+            {{ form.active.label }}
+            {{ form.active }}
+            <div class="min_quantity_filter">
+                {{ form.min_quantity.label }}
+                {{ form.min_quantity }}
+            </div>
+            <div class="product_groups_filter">
+                {{ form.groups.label }}
+                {{ form.groups }}
+            </div>
+            <button type="submit">Export products</button>
+        </form>
+    {% else %}
+        <h3>Firstly, you need to login into ZoneSmart to export products</h3>
+    {% endif %}
+
+{% endblock %}

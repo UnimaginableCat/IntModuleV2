@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Rubik:400,700'><link rel="stylesheet" href="{% static "css/styles.css" %}">
+</head>
+<body>
+<div id="header">
+</div>
+<div id="content">
+	<header>
+        <div class="topNavLeft">
+        <h1 class="topH">ZoneSmart Integration Module</h1>
+            <div class="log_status">ZoneSmart Login status:
+                {% if zone_status%}
+                    <div class="logged_in">Logged in</div>
+                {% else %}
+                    <div class="not_logged">Not logged in</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="topNavRight">
+            <div class="topNavLink"><a href = "{% url 'zone_acc_setting' %}">ZoneSmart account</a></div>
+            <div class="topNavLink"><a href = "{% url 'export_products' %}">Export products</a></div>
+            <div class="topNavLink"><a href = "{% url 'logout' %}">Logout</a></div>
+        </div>
+    </header>
+    <div class="mainBlock">
+        <article>
+            {% block content %}
+            {% endblock %}
+        </article>
+    </div>
+</div>
+</body>
+</html>
