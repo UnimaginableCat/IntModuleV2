@@ -21,5 +21,19 @@
     {% else %}
         <h3>Firstly, you need to login into ZoneSmart to export products</h3>
     {% endif %}
-
+{% if export_error%}
+    <div id="myModal" class="modal" style="display: block">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>Enter valid email and password</p>
+        </div>
+    </div>
+{% endif %}
+    <script>
+    var modal = document.getElementById("myModal");
+    var span = document.getElementsByClassName("close")[0];
+    span.onclick = function() {
+      modal.style.display = "none";
+    }
+    </script>
 {% endblock %}
