@@ -48,10 +48,9 @@ class Authenticator:  # Класс помогающий с входом
         r = requests.post("https://api.zonesmart.com/v1/auth/jwt/create/", headers=header, json=data)
         #print(r.text)
         tokens = json.loads(r.text)
-        access = tokens['access']
-        refresh = tokens['refresh']
-        status = r.status_code
-        if status == 200:
+        if r.status_code == 200:
+            access = tokens['access']
+            refresh = tokens['refresh']
             return True, access, refresh
         else:
             return False, "", ""
