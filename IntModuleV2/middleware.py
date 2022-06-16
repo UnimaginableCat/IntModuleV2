@@ -3,22 +3,32 @@ from django.shortcuts import redirect
 
 from IntModuleV2.views import delete_session
 from Login.views import Authenticator
-
+from Main.views import check_zone_cookies, try_zone_login, get_access_token, check_retail_cookies
 
 auth_helper = Authenticator()
 
 
-def check_retail_cookies(request):
-    try:  # Пробуем получить адрес и ключ апи из кукисов
-        address = request.session['address']
-        api_key = request.session['api_key']
-    except:  # Если что-то идёт не так, то делаем их None
-        address = None
-        api_key = None
-    if address is None or api_key is None:
-        return False, "", ""
-    else:
-        return True, address, api_key
+class ZoneAuthCheckMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        match request.path:
+            case "/export_products":
+                zone_cookie_check, email, password, refresh_token, access_token = check_zone_cookies(request)
+                if not zone_cookie_check:
+                    return redirect("/zone_account")
+                access_token_check = try_zone_login(access_token)
+                if not access_token_check:
+                    refresh_check, new_access_token = get_access_token(refresh_token)
+                    if not refresh_check:
+                        return redirect("/zone_account")
+                    request.session['access_token'] = new_access_token
+
+        response = self.get_response(request)
+
+        return response
+
 
 class RetailAuthCheckMiddleware:
     def __init__(self, get_response):
@@ -35,7 +45,7 @@ class RetailAuthCheckMiddleware:
                     else:
                         delete_session(request)
                         return redirect("/login")
-            case "/zone_account" | "/module_settings":
+            case "/zone_account" | "/export_products":
                 retail_cookie_check, address, api_key = check_retail_cookies(request)
                 if retail_cookie_check:
                     retail_login_check = auth_helper.try_retail_login(address, api_key)

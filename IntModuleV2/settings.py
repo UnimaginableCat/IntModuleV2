@@ -36,7 +36,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'Login',
-    'Main'
+    'Main',
+    'celery',
+    'django.contrib.admin',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -47,7 +50,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'IntModuleV2.middleware.RetailAuthCheckMiddleware'
+    'IntModuleV2.middleware.RetailAuthCheckMiddleware',
+    'IntModuleV2.middleware.ZoneAuthCheckMiddleware'
 ]
 
 ROOT_URLCONF = 'IntModuleV2.urls'
@@ -120,4 +124,14 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STATICFILES_DIRS = [BASE_DIR / 'IntModuleV2\static']
+STATICFILES_DIRS = [BASE_DIR / 'IntModuleV2/static']
+
+
+# REDIS related settings
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = '6379'
+CELERY_BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_IMPORTS = ('IntModuleV2.tasks',)

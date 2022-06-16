@@ -1,15 +1,15 @@
+import datetime
 import json
-import string
 
-import jsonpickle as jsonpickle
 import requests
-import retailcrm
-from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import render
 from django.views import View
 
+from IntModuleV2.enums import TimeInterval
 from IntModuleV2.forms import ZoneSmartLoginForm, ExportProductsForm
 from Login.views import auth_helper
+from Main.models import PriceChecker, QuantityChecker
+from Main.helpers import RetailCRMHelper
 
 
 def get_access_token(refresh_token):
@@ -70,113 +70,6 @@ def try_zone_login(access_token):
         return False
 
 
-class ZoneSmartProduct:
-    def __init__(self, sku, quantity, price, product_code, main_image, extra_images):
-        self.sku = sku
-        self.quantity = quantity
-        self.price = price
-        if product_code is None:
-            self.product_code = "pcode"
-        else:
-            self.product_code = product_code
-        self.condition = "NEW"
-        self.main_image = main_image
-        self.extra_images = extra_images
-        #self.attributes = {"name": "testName",
-        #                   "value":"testValue"}
-
-
-class ZoneSmartListing:
-    def __init__(self, title, desc, list_sku, cat, cat_name, brand, products: list):
-        self.title = title
-        if desc == "":
-            self.description = "Exported from RetailCRM"
-        else:
-            self.description = desc
-        self.listing_sku = list_sku
-        #self.category = cat
-        self.category_name = cat_name
-        self.brand = brand
-        self.currency = "RUB"
-        self.products = products
-
-    def to_json(self):
-        return json.dumps(self, default=lambda o: o.__dict__,ensure_ascii=False)
-
-
-class RetailCRMHelper:
-    def __init__(self):
-        self.address = None
-        self.api_key = None
-        self.client = None
-
-    def init_and_setup(self, address, api_key):
-        self.address = address
-        self.api_key = api_key
-        self.client = retailcrm.v5(self.address, self.api_key)
-
-    def get_products(self, dict_groups, active=0, min_quantity=0, groups=None):
-        if groups is None:
-            groups = []
-        if not groups:
-            product_filter = {
-                'active': active,
-                'minQuantity': min_quantity,
-            }
-        else:
-            product_filter = {
-                'active': active,
-                'minQuantity': min_quantity,
-                'groups': groups,
-            }
-        products = []
-        total_count = self.client.products(product_filter).get_response()['pagination']['totalCount']
-        if total_count != 0:
-            total_page_count = self.client.products(product_filter).get_response()['pagination']['totalPageCount']
-            #test = self.client.products(product_filter).get_response()
-            #print(test)
-
-            for i in range(1, total_page_count + 1):
-                products_query = self.client.products(product_filter, 20, i).get_response()['products']
-                #print(products_query)
-                for product in products_query:
-                    #print(product)
-                    offers = []
-                    for offer in product['offers']:
-                        #print(offer)
-
-                        new_offer = ZoneSmartProduct(offer.get('id'),
-                                                     offer.get('quantity'),
-                                                     offer.get('price'),
-                                                     offer.get('barcode'),
-                                                     product.get('imageUrl'),
-                                                     offer.get('images'))
-                        offers.append(new_offer)
-                    new_listing = ZoneSmartListing(product.get('name'),
-                                                   product.get('description'),
-                                                   product.get('id'),
-                                                   product['groups'][0]['externalId'],
-                                                   dict_groups.get(product['groups'][0]['externalId']),
-                                                   product.get('manufacturer'),
-                                                   offers)
-                    products.append(new_listing)
-        return products
-
-    def get_product_groups(self):
-        groups = dict()
-
-        groups_filter = {'active': 1}
-
-        total_page_count = self.client.product_groups(groups_filter).get_response()['pagination']['totalPageCount']
-        for i in range(1, total_page_count + 1):
-            group_query = self.client.product_groups(groups_filter, 20, i).get_response()['productGroup']
-            for group in group_query:
-                groups[group['externalId']] = group['name']
-        tuple_groups = [(k, v) for k, v in groups.items()]
-        #Возвращаем группы в нужном виде, и в виде Dict
-        return tuple_groups, groups
-
-
 def init_retail_helper(request):
     address = request.session['address']
     api_key = request.session['api_key']
@@ -184,20 +77,133 @@ def init_retail_helper(request):
     retail_helper.init_and_setup(address, api_key)
     return retail_helper
 
-#Ура почти заработало
-def zone_create_listing(products, access_token):
+
+class ExportedProduct:
+    def __init__(self, retail_id, zone_listing_id, zone_product_id, warehouse_id):
+        self.retail_id = retail_id
+        self.zone_listing_id = zone_listing_id
+        self.zone_product_id = zone_product_id
+        self.warehouse_id = warehouse_id
+
+    def to_dict(self):
+        return {'retail_id': self.retail_id,
+                'zone_listing_id': self.zone_listing_id,
+                'zone_product_id': self.zone_product_id,
+                'warehouse_id': self.warehouse_id}
+
+
+def zone_create_listings(listings, access_token, warehouse_id):
     header = {
         'Content-Type': 'application/json',
         'Authorization': 'JWT ' + access_token
     }
     results = dict()
-    for product in products:
-        json_product = product.to_json()
+    results2 = list()
+    for listing in listings:
+        json_product = listing.to_json()
         correct_json = json.loads(json_product)
         response = requests.post("https://api.zonesmart.com/v1/zonesmart/listing/", headers=header,
                                  json=correct_json)
-        results[product.title] = response.status_code
-    return results
+        if response.status_code == 201:
+            created_listing = json.loads(response.text)
+            created_listing_products = created_listing['products']
+            for product in created_listing_products:
+                results2.append(ExportedProduct(product['sku'],
+                                                created_listing['id'],
+                                                product['id'],
+                                                warehouse_id))
+        results[listing.title] = response.status_code
+    return results, results2
+
+
+def zone_warehouse_set_default(access_token, warehouse_id):
+    header = {
+        'Content-Type': 'application/json',
+        'Authorization': 'JWT ' + access_token
+    }
+    response = requests.post(f"https://api.zonesmart.com/v1/zonesmart/warehouse/{warehouse_id}/set_default/",
+                             headers=header)
+    if response.status_code == 200:
+        return True
+    else:
+        return False
+
+
+def zone_get_product_quantity(access_token, listing_id, product_id, warehouse_id):
+    header = {
+        'Content-Type': 'application/json',
+        'Authorization': 'JWT ' + access_token
+    }
+    response = requests.get(f"https://api.zonesmart.com/v1/zonesmart/listing/{listing_id}/product/{product_id}/",
+                            headers=header)
+    listing = json.loads(response.text)
+    products_inventories = listing['product_inventories']
+    for product in products_inventories:
+        temp_warehouse_id = product['warehouse']
+        if warehouse_id == temp_warehouse_id:
+            return product['quantity']
+
+
+def zone_get_product_price(access_token, listing_id, product_id):
+    header = {
+        'Content-Type': 'application/json',
+        'Authorization': 'JWT ' + access_token
+    }
+    response = requests.get(f"https://api.zonesmart.com/v1/zonesmart/listing/{listing_id}/product/{product_id}/",
+                            headers=header)
+    listing = json.loads(response.text)
+    price = listing['price']
+    return price
+
+
+def zone_update_price(access_token, product_id, listing_id, quantity):
+    header = {
+        'Content-Type': 'application/json',
+        'Authorization': 'JWT ' + access_token
+    }
+    data = {
+        'price': quantity
+    }
+    response = requests.patch(f"https://api.zonesmart.com/v1/zonesmart/listing/{listing_id}/product/{product_id}/",
+                              headers=header,
+                              json=data)
+    if response.status_code == 200:
+        return True
+    else:
+        return False
+
+
+def zone_update_quantity(access_token, product_id, warehouse_id, quantity):
+    header = {
+        'Content-Type': 'application/json',
+        'Authorization': 'JWT ' + access_token
+    }
+    data = {
+        'inventory': [{
+            'product': product_id,
+            'warehouse': warehouse_id,
+            'quantity': quantity
+        }]
+    }
+    response = requests.post("https://api.zonesmart.com/v1/zonesmart/product_inventory/bulk_update/", headers=header,
+                             json=data)
+    if response.status_code == 200:
+        return True
+    else:
+        return False
+
+
+def zone_create_warehouse(access_token):
+    header = {
+        'Content-Type': 'application/json',
+        'Authorization': 'JWT ' + access_token
+    }
+    data = {
+        'name': 'Export from RetailCRM at: ' + datetime.datetime.now().__str__()
+    }
+    response = requests.post("https://api.zonesmart.com/v1/zonesmart/warehouse/", headers=header, json=data)
+    warehouse_id = json.loads(response.text)['id']
+    return warehouse_id
 
 
 class ExportProductsView(View):
@@ -212,49 +218,116 @@ class ExportProductsView(View):
         active = request.POST.get('active')
         min_quantity = request.POST.get('min_quantity')
         groups = request.POST.getlist('groups')
-        products_to_export = retail_helper.get_products(groups_dict, active, min_quantity, groups)
-        print(products_to_export)
-
-        zone_cookie_check, email, password, refresh_token, access_token = check_zone_cookies(request)
-        match zone_cookie_check:
-            case True:
-                access_token_check = try_zone_login(access_token)
-                if access_token_check:
-                    zone_create_listing(products_to_export, access_token)
-                    return render(request, self.template_name,
-                                  context={"form": form, "zone_status": try_zone_login(access_token)})
-                else:
-                    refresh_check, new_access_token = get_access_token(refresh_token)
-                    if refresh_check:
-                        request.session['access_token'] = new_access_token
-                        zone_create_listing(products_to_export, new_access_token)
-                        return render(request, self.template_name,
-                                      context={"form": form, "zone_status": try_zone_login(new_access_token)})
-                    else:
-                        return render(request, self.template_name, context={"form": form,
-                                                                            "zone_status": False,
-                                                                            "export_error": True})
-            case False:
-                return render(request, self.template_name,
-                              context={'zone_status': False,
-                                       'form': form})
+        quantity_period = request.POST.get('quantity_check_period')
+        price_sync = request.POST.get('price_sync')
 
 
+
+        access_token = request.session['access_token']
+        refresh_token = request.session['refresh_token']
+        # products list
+        products_to_export = retail_helper.get_products(access_token, groups_dict, active, min_quantity, groups)
+
+        warehouse_id = zone_create_warehouse(access_token)
+        zone_warehouse_set_default(access_token, warehouse_id)
+
+        export_results, exported_products_creds = zone_create_listings(products_to_export, access_token, warehouse_id)
+
+        # Need to convert list of objects to json because celery cant understand complex python objects
+        temp_exported_products_creds = [obj.to_dict() for obj in exported_products_creds]
+        json_exported_products_creds = json.dumps(temp_exported_products_creds)
+
+        QuantityChecker.objects.create(retail_address=retail_helper.address,
+                                       retail_api_key=retail_helper.api_key,
+                                       access_token=access_token,
+                                       refresh_token=refresh_token,
+                                       period=TimeInterval[quantity_period],
+                                       products=json_exported_products_creds)
+        if price_sync == '1':
+            price_sync_period = request.POST.get('price_check_period')
+            PriceChecker.objects.create(retail_address=retail_helper.address,
+                                        retail_api_key=retail_helper.api_key,
+                                        access_token=access_token,
+                                        refresh_token=refresh_token,
+                                        period=TimeInterval[price_sync_period],
+                                        products=json_exported_products_creds)
+        # test = retail_helper.get_product_quantity()
+
+        # test2 = zone_get_product_quantity(access_token,
+        #                                   exported_products_creds[0].zone_listing_id,
+        #                                   exported_products_creds[0].zone_product_id,
+        #                                   warehouse_id)
+
+        count = sum(value == 201 for value in export_results.values())
+        if count != 0:
+            return render(request, self.template_name,
+                          context={"form": form,
+                                   "zone_status": True,
+                                   "modal_show": True,
+                                   "modal_text": f"Successfully transferred {count} products"})
+        else:
+            return render(request, self.template_name,
+                          context={"form": form,
+                                   "zone_status": True,
+                                   "modal_show": True,
+                                   "modal_text": f"There was some kind of error while exporting"})
+
+        # zone_cookie_check, email, password, refresh_token, access_token = check_zone_cookies(request)
+        # match zone_cookie_check:
+        #     case True:
+        #         access_token_check = try_zone_login(access_token)
+        #         if access_token_check:
+        #             # warehouse_id = zone_create_warehouse(access_token)
+        #             # zone_warehouse_set_default(access_token, warehouse_id)
+        #             products_to_export = retail_helper.get_products(access_token, groups_dict, active, min_quantity,
+        #                                                             groups)
+        #
+        #             results = zone_create_listings(products_to_export, access_token)
+        #             count = sum(value == 201 for value in results.values())
+        #             return render(request, self.template_name,
+        #                           context={"form": form,
+        #                                    "zone_status": try_zone_login(access_token),
+        #                                    "modal_show": True,
+        #                                    "modal_text": f"Successfully transferred {count} products"})
+        #         else:
+        #             refresh_check, new_access_token = get_access_token(refresh_token)
+        #             if refresh_check:
+        #                 request.session['access_token'] = new_access_token
+        #                 products_to_export = retail_helper.get_products(new_access_token, groups_dict, active,
+        #                                                                 min_quantity,
+        #                                                                 groups)
+        #                 results = zone_create_listings(products_to_export, new_access_token)
+        #                 count = sum(value == 201 for value in results.values())
+        #                 return render(request, self.template_name,
+        #                               context={"form": form,
+        #                                        "zone_status": try_zone_login(access_token),
+        #                                        "modal_show": True,
+        #                                        "modal_text": f"Successfully transferred {count} products"})
+        #             else:
+        #                 return render(request, self.template_name, context={"form": form,
+        #                                                                     "zone_status": False})
+        #     case False:
+        #         return render(request, self.template_name,
+        #                       context={'zone_status': False,
+        #                                'form': form})
 
     def get(self, request):
         retail_helper = init_retail_helper(request)
         choices, groups_dict = retail_helper.get_product_groups()
-        #print(choices)
+        # print(choices)
         form = ExportProductsForm(choices)
-        zone_cookie_check, email, password, refresh_token, access_token = check_zone_cookies(request)
-        if zone_cookie_check:
-            return render(request, self.template_name,
-                          context={'zone_status': try_zone_login(access_token),
-                                   'form': form})
-        else:
-            return render(request, self.template_name,
-                          context={'zone_status': False,
-                                   'form': form})
+        return render(request, self.template_name,
+                      context={'zone_status': try_zone_login(request.session['access_token']),
+                               'form': form})
+        # zone_cookie_check, email, password, refresh_token, access_token = check_zone_cookies(request)
+        # if zone_cookie_check:
+        #     return render(request, self.template_name,
+        #                   context={'zone_status': try_zone_login(access_token),
+        #                            'form': form})
+        # else:
+        #     return render(request, self.template_name,
+        #                   context={'zone_status': False,
+        #                            'form': form})
 
 
 class ZoneAccountView(View):
@@ -280,7 +353,9 @@ class ZoneAccountView(View):
                                                                             "auth_state": zone_login_check})
 
     def get(self, request):
+
         zone_cookie_check, email, password, refresh_token, access_token = check_zone_cookies(request)
+        # QuantityChecker.objects.create(retail_email=request.session['address'])
         form = ZoneSmartLoginForm(initial={'email': email,
                                            'password': password}, auto_id=False)
         match zone_cookie_check:

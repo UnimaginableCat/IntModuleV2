@@ -16,24 +16,45 @@
                 {{ form.groups.label }}
                 {{ form.groups }}
             </div>
+            <div class="quantity_check_period">
+                {{ form.quantity_check_period.label }}
+                {{ form.quantity_check_period }}
+            </div>
+            {{ form.price_sync.label }}
+            {{ form.price_sync }}
+            <div class="price_check_period">
+                {{ form.price_check_period.label }}
+                {{ form.price_check_period }}
+            </div>
             <button type="submit">Export products</button>
         </form>
     {% else %}
         <h3>Firstly, you need to login into ZoneSmart to export products</h3>
     {% endif %}
-{% if export_error%}
+{% if modal_show%}
     <div id="myModal" class="modal" style="display: block">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <p>Enter valid email and password</p>
+            <p>{{ modal_text }}</p>
         </div>
     </div>
 {% endif %}
     <script>
-    var modal = document.getElementById("myModal");
-    var span = document.getElementsByClassName("close")[0];
-    span.onclick = function() {
-      modal.style.display = "none";
-    }
+        const price_sync_period = document.getElementsByClassName("price_check_period")[0];
+        const radio_sync_on = document.getElementById('price_sync_0');
+        const radio_sync_off = document.getElementById('price_sync_1');
+        radio_sync_on.addEventListener("click",() =>{
+            price_sync_period.style.display = "flex";
+        })
+        radio_sync_off.addEventListener("click",() =>{
+            price_sync_period.style.display = "none";
+        })
+
+        const modal = document.getElementById("myModal");
+        const span = document.getElementsByClassName("close")[0];
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
     </script>
 {% endblock %}

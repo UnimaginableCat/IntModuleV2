@@ -81,6 +81,14 @@ header {
   flex-direction: row;
 }
 
+.quantity_check_period{
+  padding-bottom: 10px;
+}
+
+.price_check_period{
+  padding-bottom: 10px;
+  display: none;
+}
 
 .mainBlock article{
   padding-left: 2vw;

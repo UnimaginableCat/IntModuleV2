@@ -15,7 +15,7 @@ Including another URLconf
 """
 # from django.contrib import admin
 from django.urls import path
-
+from django.contrib import admin
 from IntModuleV2.views import logout
 from Login.views import LoginView
 from Main.views import ZoneAccountView, ExportProductsView
@@ -25,6 +25,6 @@ urlpatterns = [
     path('', LoginView.as_view()),
     path('zone_account', ZoneAccountView.as_view(), name="zone_acc_setting"),
     path('logout', logout, name="logout"),
-    path('export_products', ExportProductsView.as_view(), name="export_products")
-    #    path('admin/', admin.site.urls),
+    path('export_products', ExportProductsView.as_view(), name="export_products"),
+    path('admin/', admin.site.urls),
 ]
