@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import requests
 import retailcrm
@@ -6,8 +7,9 @@ from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import render, redirect
 from django.views import View
 
-from IntModuleV2.forms import LoginForm
+from Login.forms import LoginForm
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 class Authenticator:  # Класс помогающий с входом
 
@@ -60,7 +62,7 @@ auth_helper = Authenticator()
 
 
 class LoginView(View):
-    template_name = 'account/Login.html'
+    template_name = 'Login.html'
     http_method_names = ['get', 'post']
 
     def post(self, request):
@@ -74,8 +76,8 @@ class LoginView(View):
             request.session['api_key'] = api_key
             return redirect("/zone_account")
         else:
-            return render(request, "account/Login.html", context={'login_state': auth_check, "form": form})
+            return render(request, self.template_name, context={'login_state': auth_check, "form": form})
 
     def get(self, request):
         form = LoginForm(request.GET)  # Получаем форму
-        return render(request, "account/Login.html", context={"form": form})
+        return render(request, self.template_name, context={"form": form})

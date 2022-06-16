@@ -1,9 +1,10 @@
 {% extends "base_main.html" %}
-{% block title %}Export products{% endblock %}
+{% load i18n %}
+{% block title %}{% trans 'Export products'%}{% endblock %}
 {% block content %}
-    <h2>Export products</h2>
+    <h2>{% trans 'Export products'%}</h2>
     {% if zone_status %}
-        <h3>Filters:</h3>
+        <h3>{% trans 'Filters'%}:</h3>
         <form method="post">
         {% csrf_token %}
             {{ form.active.label }}
@@ -26,10 +27,10 @@
                 {{ form.price_check_period.label }}
                 {{ form.price_check_period }}
             </div>
-            <button type="submit">Export products</button>
+            <button type="submit">{% trans 'Export products_button'%}</button>
         </form>
     {% else %}
-        <h3>Firstly, you need to login into ZoneSmart to export products</h3>
+        <h3>{% trans 'Firstly, you need to login into ZoneSmart to export products'%}</h3>
     {% endif %}
 {% if modal_show%}
     <div id="myModal" class="modal" style="display: block">

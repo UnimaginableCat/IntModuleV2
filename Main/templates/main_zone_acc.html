@@ -1,20 +1,21 @@
 {% extends "base_main.html" %}
-{% block title %}ZoneSmart account{% endblock %}
+{% load i18n %}
+{% block title %}{% trans 'ZoneSmart account'%}{% endblock %}
 {% block content %}
-    <h2>ZoneSmart credentials</h2>
+    <h2>{% trans 'ZoneSmart credentials'%}</h2>
     <form method="post">
         {% csrf_token %}
         <div class="content">
-            <div class="cred_input">ZoneSmart Email:{{form.email}}</div>
-            <div class="cred_input">ZoneSmart Password:{{form.password}}</div>
-            <button type="submit">Sign in ZoneSmart</button>
+            <div class="cred_input">{% trans 'ZoneSmart Email'%}:{{form.email}}</div>
+            <div class="cred_input">{% trans 'ZoneSmart Password'%}:{{form.password}}</div>
+            <button type="submit">{% trans 'Sign in ZoneSmart'%}</button>
         </div>
     </form>
 {% if auth_state == False%}
     <div id="myModal" class="modal" style="display: block">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <p>Enter valid email and password</p>
+            <p>{% trans 'Enter valid email and password'%}</p>
         </div>
     </div>
 {% endif %}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+{% load static %}
+{% load i18n %}
+<html lang="en">
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Rubik:400,700'><link rel="stylesheet" href="{% static "css/styles.css" %}">
+</head>
+<body>
+<div id="header">
+</div>
+<div id="content">
+    {% block content %}
+    {% endblock %}
+</div>
+<div class="lang_select">
+<form action="{% url 'set_language' %}" method="post">
+  {% csrf_token %}
+  <div class="row g-2">
+    <div class="col col-sm-12 col-lg-3 col-md-4">
+      <div class="form-floating">
+        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+        <select class="form-select" name="language" onchange="this.form.submit()" id="language">
+          {% get_current_language as LANGUAGE_CODE %}
+          {% get_available_languages as LANGUAGES %}
+          {% get_language_info_list for LANGUAGES as languages %}
+          {% for language in languages %}
+            <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected{% endif %}>
+              {{ language.name_local }} ({{ language.code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+</form>
+</div>
+
+
+
+</body>
+</html>

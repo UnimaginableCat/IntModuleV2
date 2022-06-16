@@ -6,10 +6,12 @@ from django.shortcuts import render
 from django.views import View
 
 from IntModuleV2.enums import TimeInterval
-from IntModuleV2.forms import ZoneSmartLoginForm, ExportProductsForm
+
+from Main.forms import ZoneSmartLoginForm, ExportProductsForm
 from Login.views import auth_helper
 from Main.models import PriceChecker, QuantityChecker
 from Main.helpers import RetailCRMHelper
+from django.utils.translation import gettext_lazy as _
 
 
 def get_access_token(refresh_token):
@@ -207,7 +209,7 @@ def zone_create_warehouse(access_token):
 
 
 class ExportProductsView(View):
-    template_name = 'main_page/main_export_products.html'
+    template_name = 'main_export_products.html'
     http_method_names = ['get', 'post']
 
     def post(self, request):
@@ -221,16 +223,14 @@ class ExportProductsView(View):
         quantity_period = request.POST.get('quantity_check_period')
         price_sync = request.POST.get('price_sync')
 
-
-
         access_token = request.session['access_token']
         refresh_token = request.session['refresh_token']
         # products list
         products_to_export = retail_helper.get_products(access_token, groups_dict, active, min_quantity, groups)
-
+        # need to create warehouse to exported products
         warehouse_id = zone_create_warehouse(access_token)
         zone_warehouse_set_default(access_token, warehouse_id)
-
+        # export_results - array with all products and their status codes
         export_results, exported_products_creds = zone_create_listings(products_to_export, access_token, warehouse_id)
 
         # Need to convert list of objects to json because celery cant understand complex python objects
@@ -251,65 +251,21 @@ class ExportProductsView(View):
                                         refresh_token=refresh_token,
                                         period=TimeInterval[price_sync_period],
                                         products=json_exported_products_creds)
-        # test = retail_helper.get_product_quantity()
 
-        # test2 = zone_get_product_quantity(access_token,
-        #                                   exported_products_creds[0].zone_listing_id,
-        #                                   exported_products_creds[0].zone_product_id,
-        #                                   warehouse_id)
-
+        # count - variable with number of succesf. exported products
         count = sum(value == 201 for value in export_results.values())
         if count != 0:
             return render(request, self.template_name,
                           context={"form": form,
                                    "zone_status": True,
                                    "modal_show": True,
-                                   "modal_text": f"Successfully transferred {count} products"})
+                                   "modal_text": _('Successfully transferred %(count)s products') % {'count': count}})
         else:
             return render(request, self.template_name,
                           context={"form": form,
                                    "zone_status": True,
                                    "modal_show": True,
-                                   "modal_text": f"There was some kind of error while exporting"})
-
-        # zone_cookie_check, email, password, refresh_token, access_token = check_zone_cookies(request)
-        # match zone_cookie_check:
-        #     case True:
-        #         access_token_check = try_zone_login(access_token)
-        #         if access_token_check:
-        #             # warehouse_id = zone_create_warehouse(access_token)
-        #             # zone_warehouse_set_default(access_token, warehouse_id)
-        #             products_to_export = retail_helper.get_products(access_token, groups_dict, active, min_quantity,
-        #                                                             groups)
-        #
-        #             results = zone_create_listings(products_to_export, access_token)
-        #             count = sum(value == 201 for value in results.values())
-        #             return render(request, self.template_name,
-        #                           context={"form": form,
-        #                                    "zone_status": try_zone_login(access_token),
-        #                                    "modal_show": True,
-        #                                    "modal_text": f"Successfully transferred {count} products"})
-        #         else:
-        #             refresh_check, new_access_token = get_access_token(refresh_token)
-        #             if refresh_check:
-        #                 request.session['access_token'] = new_access_token
-        #                 products_to_export = retail_helper.get_products(new_access_token, groups_dict, active,
-        #                                                                 min_quantity,
-        #                                                                 groups)
-        #                 results = zone_create_listings(products_to_export, new_access_token)
-        #                 count = sum(value == 201 for value in results.values())
-        #                 return render(request, self.template_name,
-        #                               context={"form": form,
-        #                                        "zone_status": try_zone_login(access_token),
-        #                                        "modal_show": True,
-        #                                        "modal_text": f"Successfully transferred {count} products"})
-        #             else:
-        #                 return render(request, self.template_name, context={"form": form,
-        #                                                                     "zone_status": False})
-        #     case False:
-        #         return render(request, self.template_name,
-        #                       context={'zone_status': False,
-        #                                'form': form})
+                                   "modal_text": _("There was some kind of error while exporting")})
 
     def get(self, request):
         retail_helper = init_retail_helper(request)
@@ -319,19 +275,10 @@ class ExportProductsView(View):
         return render(request, self.template_name,
                       context={'zone_status': try_zone_login(request.session['access_token']),
                                'form': form})
-        # zone_cookie_check, email, password, refresh_token, access_token = check_zone_cookies(request)
-        # if zone_cookie_check:
-        #     return render(request, self.template_name,
-        #                   context={'zone_status': try_zone_login(access_token),
-        #                            'form': form})
-        # else:
-        #     return render(request, self.template_name,
-        #                   context={'zone_status': False,
-        #                            'form': form})
 
 
 class ZoneAccountView(View):
-    template_name = 'main_page/main_zone_acc.html'
+    template_name = 'main_zone_acc.html'
     http_method_names = ['get', 'post']
 
     def post(self, request):
@@ -345,12 +292,12 @@ class ZoneAccountView(View):
             request.session['zone_pass'] = password
             request.session['access_token'] = access_token
             request.session['refresh_token'] = refresh_token
-            return render(request, "main_page/main_zone_acc.html", context={"form": form,
-                                                                            "auth_state": zone_login_check,
-                                                                            "zone_status": zone_login_check})
+            return render(request, self.template_name, context={"form": form,
+                                                                "auth_state": zone_login_check,
+                                                                "zone_status": zone_login_check})
         else:
-            return render(request, "main_page/main_zone_acc.html", context={"form": form,
-                                                                            "auth_state": zone_login_check})
+            return render(request, self.template_name, context={"form": form,
+                                                                "auth_state": zone_login_check})
 
     def get(self, request):
 
@@ -362,21 +309,19 @@ class ZoneAccountView(View):
             case True:
                 access_token_check = try_zone_login(access_token)
                 if access_token_check:
-                    return render(request, "main_page/main_zone_acc.html", context={"form": form,
-                                                                                    "zone_status": try_zone_login(
-                                                                                        access_token)})
+                    return render(request, self.template_name, context={"form": form,
+                                                                        "zone_status": try_zone_login(access_token)})
                 else:
                     refresh_check, new_access_token = get_access_token(refresh_token)
                     if refresh_check:
                         request.session['access_token'] = new_access_token
-                        return render(request, "main_page/main_zone_acc.html", context={"form": form,
-                                                                                        "zone_status": try_zone_login(
-                                                                                            new_access_token)})
+                        return render(request, self.template_name, context={"form": form,
+                                                                            "zone_status": try_zone_login(new_access_token)})
                     else:
                         form = ZoneSmartLoginForm(request.GET)
-                        return render(request, "main_page/main_zone_acc.html", context={"form": form,
-                                                                                        "zone_status": False})
+                        return render(request, self.template_name, context={"form": form,
+                                                                            "zone_status": False})
             case False:
                 form = ZoneSmartLoginForm(request.GET)
-                return render(request, "main_page/main_zone_acc.html", context={"form": form,
-                                                                                "zone_status": False})
+                return render(request, self.template_name, context={"form": form,
+                                                                    "zone_status": False})

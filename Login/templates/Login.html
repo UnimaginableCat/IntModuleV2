@@ -1,4 +1,5 @@
 {% extends "base_login.html" %}
+{% load i18n %}
 {% block title %}Login{% endblock %}
 {% block content %}
 <div class="login-form">
@@ -14,14 +15,15 @@
         </div>
     </div>
     <div class="action">
-      <button type="submit">Sign in</button>
+      <button type="submit">{% trans 'sign_in_button' %}</button>
     </div>
   </form>
+
 {% if login_state == False%}
     <div id="myModal" class="modal" style="display: block">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <p>Enter valid address and apiKey</p>
+            <p>{% trans 'retail_error_msg' %}</p>
         </div>
     </div>
 {% endif %}

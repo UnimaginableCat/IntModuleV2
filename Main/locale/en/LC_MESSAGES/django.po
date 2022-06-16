@@ -1,0 +1,153 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-06-16 19:00+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: forms.py:9 forms.py:10
+msgid "password"
+msgstr "password"
+
+#: forms.py:14
+msgid "Active"
+msgstr "Active"
+
+#: forms.py:15
+msgid "Not Active"
+msgstr "Not Active"
+
+#: forms.py:18
+msgid "Yes"
+msgstr "Yes"
+
+#: forms.py:19
+msgid "No"
+msgstr "No"
+
+#: forms.py:23
+msgid "1 Minute"
+msgstr "1 Minute"
+
+#: forms.py:24
+msgid "5 Minutes"
+msgstr "5 Minutes"
+
+#: forms.py:25
+msgid "15 Minutes"
+msgstr "15 Minutes"
+
+#: forms.py:26
+msgid "1 Hour"
+msgstr "1 Hour"
+
+#: forms.py:27
+msgid "1 Day"
+msgstr "1 Day"
+
+#: forms.py:35 forms.py:44
+msgid "Product categories:"
+msgstr "Product categories:"
+
+#: forms.py:40
+msgid "Which products to export?"
+msgstr "Which products to export?"
+
+#: forms.py:42
+msgid "Minimal quantity of product:"
+msgstr "Minimal quantity of product:"
+
+#: forms.py:48
+msgid "Period of products quantity synchronization:"
+msgstr "Period of products quantity synchronization:"
+
+#: forms.py:50
+msgid "Do you want to synchronize prices?"
+msgstr "Do you want to synchronize prices?"
+
+#: forms.py:55
+msgid "Period of products price synchronization:"
+msgstr "Period of products price synchronization:"
+
+#: templates/base_main.html:15
+msgid "ZoneSmart Integration Module"
+msgstr "ZoneSmart Integration Module"
+
+#: templates/base_main.html:16
+msgid "ZoneSmart Login status"
+msgstr "ZoneSmart Login status"
+
+#: templates/base_main.html:18
+msgid "Logged in"
+msgstr "Logged in"
+
+#: templates/base_main.html:20
+msgid "Not logged in"
+msgstr "Not logged in"
+
+#: templates/base_main.html:25 templates/main_zone_acc.html:3
+msgid "ZoneSmart account"
+msgstr "ZoneSmart account"
+
+#: templates/base_main.html:26 templates/main_export_products.html:3
+#: templates/main_export_products.html:5
+msgid "Export products"
+msgstr "Export products"
+
+#: templates/base_main.html:27
+msgid "Logout"
+msgstr "Logout"
+
+#: templates/main_export_products.html:7
+msgid "Filters"
+msgstr "Filters"
+
+#: templates/main_export_products.html:30
+msgid "Export products_button"
+msgstr "Export products_button"
+
+#: templates/main_export_products.html:33
+msgid "Firstly, you need to login into ZoneSmart to export products"
+msgstr "Firstly, you need to login into ZoneSmart to export products"
+
+#: templates/main_zone_acc.html:5
+msgid "ZoneSmart credentials"
+msgstr "ZoneSmart credentials"
+
+#: templates/main_zone_acc.html:9
+msgid "ZoneSmart Email"
+msgstr "ZoneSmart Email"
+
+#: templates/main_zone_acc.html:10
+msgid "ZoneSmart Password"
+msgstr "ZoneSmart Password"
+
+#: templates/main_zone_acc.html:11
+msgid "Sign in ZoneSmart"
+msgstr "Sign in ZoneSmart"
+
+#: templates/main_zone_acc.html:18
+msgid "Enter valid email and password"
+msgstr "Enter valid email and password"
+
+#: views.py:262
+#, python-format
+msgid "Successfully transferred %(count)s products"
+msgstr "Successfully transferred %(count)s products"
+
+#: views.py:268
+msgid "There was some kind of error while exporting"
+msgstr "There was some kind of error while exporting"
