@@ -177,25 +177,20 @@ class ZoneSmartProduct:
                     'value': attributes[key]
                 }
                 self.attributes.append(temp)
-        #    temp = ['name':]
-        #    self.attributes.
-        # self.main_image = self.upload_image(main_image, access_token)
-        # self.extra_images = []
-        # for image in ext_images:
-        #    self.extra_images.append(self.upload_image(image, access_token))
 
-    def upload_image(self, image, access_token):
-        header = {
-            'Content-Type': 'application/json',
-            'Authorization': 'JWT ' + access_token
-        }
-        data = {
-            "url": image,
-        }
-        response = requests.post("https://api.zonesmart.com/v1/zonesmart/image/", headers=header,
-                                 json=data)
-        image_url = json.loads(response.text)['id']
-        return image_url
+
+def upload_image(image, access_token):
+    header = {
+        'Content-Type': 'application/json',
+        'Authorization': 'JWT ' + access_token
+    }
+    data = {
+        "url": image,
+    }
+    response = requests.post("https://api.zonesmart.com/v1/zonesmart/image/", headers=header,
+                             json=data)
+    image_url = json.loads(response.text)['id']
+    return image_url
 
 
 class ZoneSmartListing:
@@ -212,26 +207,13 @@ class ZoneSmartListing:
         self.brand = brand
         self.currency = "RUB"
         self.products = products
-        self.main_image = self.upload_image(main_image, access_token)
+        self.main_image = upload_image(main_image, access_token)
         self.extra_images = []
         for image in ext_images:
             if image == main_image:
                 continue
             else:
-                self.extra_images.append(self.upload_image(image, access_token))
-
-    def upload_image(self, image, access_token):
-        header = {
-            'Content-Type': 'application/json',
-            'Authorization': 'JWT ' + access_token
-        }
-        data = {
-            "url": image,
-        }
-        response = requests.post("https://api.zonesmart.com/v1/zonesmart/image/", headers=header,
-                                 json=data)
-        image_url = json.loads(response.text)['id']
-        return image_url
+                self.extra_images.append(upload_image(image, access_token))
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, ensure_ascii=False)

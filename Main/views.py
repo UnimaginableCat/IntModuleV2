@@ -14,12 +14,12 @@ from Main.helpers import RetailCRMHelper
 from django.utils.translation import gettext_lazy as _
 
 
-def get_access_token(refresh_token):
+def get_access_token(refresh_token: str):
     header = {
         'Content-Type': 'application/json',
     }
     data = {
-        "refresh": refresh_token,
+        "refresh": refresh_token
     }
     response = requests.post("https://api.zonesmart.com/v1/auth/jwt/refresh/", headers=header, json=data)
     converted_response = json.loads(response.text)
@@ -60,7 +60,7 @@ def check_retail_cookies(request):
         return True, address, api_key
 
 
-def try_zone_login(access_token):
+def try_zone_login(access_token: str):
     header = {
         'Content-Type': 'application/json',
         'Authorization': 'JWT ' + access_token
